@@ -94,27 +94,11 @@ plotHarmDistance <- function(RandomHarmDis,ClusHarmDis,isSort,CLuster){
 ##################################################################################################
 ##################################################################################################
 ##################################################################################################
+#example
 DistanceClustered <- FoldHardnessCalculator(CLusterList = CLchosen,DistanceMatrix = disMat,no.folds = 6,HarmDisRandom = 0)
 DistanceClustered2 <- FoldHardnessCalculator(CLusterList = ClList2,DistanceMatrix = disMat,no.folds = 6,HarmDisRandom = 0)
 
-DistanceIden <- matrix(nrow = 100,ncol = 100)
-for (i in 1:100){
-  for (j in i:100){
-    DistanceIden[i,j] <- identical(sort(DistanceClustered2[i,]),sort(DistanceClustered2[j,]))
-  }
-}
-
-#calculate the hardness of each cluster, to use for correlation calculations
-clusterHardness2 <- FoldHardnessCalculator(CLchosen2, disMat, 6,0)
-boxplot.matrix(clusterHardness2[[2]],use.cols = F)
-ClusterPfoldHardness <- matrix(t(clusterHardness2[[2]]),nrow = 1,ncol=60)
-#construct the hardness matrix for 500 genes: basically 500 copies of the above matrix
-ClusterPfoldHardness500genes <- matrix(nrow = 500,ncol = 60)
-for (i in 1:500){
-  ClusterPfoldHardness500genes[i,]<- ClusterPfoldHardness
-}
-
-#Calculate the hardness of random partitionings
+#Calculate the distinctness of random partition collections
 RandomHardnessCalculator <- function(indices,borders,DistanceMatrix){
   #indices is a list containing the numeric index of the conditions as each entry of the list
   #borders is a list containing the index of the border between folds of each partitioning as each entry of the list, each entry of the list has (no.folds +1) length
@@ -189,58 +173,6 @@ RandomHardnessCalculator <- function(indices,borders,DistanceMatrix){
 ######Calculating the random 
 RandomHardness2 <- RandomHardnessCalculator(indices = indR,borders = bordR,DistanceMatrix = disMat)
 RandomPfoldHardness <- matrix(t(RandomHardness2[[2]]),nrow = 1,ncol=60)
-#construct the hardness matrix for 500 genes: basically 500 copies of the above matrix
-RandomPfoldHardness500genes <- matrix(nrow = 500,ncol = 60)
-for (i in 1:500){
-  RandomPfoldHardness500genes[i,]<- RandomPfoldHardness
-}
-#####This is the matrix to be used for correlation calculations of performance and hardness
-HardnessClusRand <- cbind(ClusterPfoldHardness500genes,RandomPfoldHardness500genes)
-##################################################################################################
-##################################################################################################
-##################################################################################################
-##################################################################################################
-#compute the hardness of the validation set
-#creating the distance matrix 
-TFexpValidNormSamp <- GENETFValidExpNormalizedSampled[478:1716,]
-TFexpTrTesVal <- cbind(SampledTFExpDataImputed,TFexpValidNormSamp)
-library(fields)
-TFexpTrTesValTran <- t(TFexpTrTesVal)
-disMatTrTesVal <- rdist(TFexpTrTesValTran)
-boxplot.matrix(disMatTrTesVal)
-IndexValidation <- list()
-IndexValidation[[1]] <- c(1:936)
-bordersValidation <- list()
-bordersValidation[[1]] <- c(0,864,936)
-######
-#####Second validation set hardness calculations
-disMatProstateVal <- rdist(t(TFmatValidationProstateFinal)) 
-disMatProstateVal2mat <- rdist(t(TFmatValidationProstateFinalMatlab))
-IndexValidation2 <- list()
-IndexValidation2[[1]] <- c(1:1064)
-bordersValidation2 <- list()
-bordersValidation2[[1]] <- c(0,200,1064)
-ValidationSetHardnessPros3 <- RandomHardnessCalculator(indices = IndexValidation2,borders = bordersValidation2,DistanceMatrix = disMatProstateVal2mat)
-#ValidationSetHardnessMatPros <- matrix(t(ValidationSetHardness[[1]]),nrow = 72,ncol=1)
-ValidationSetHardnessPros[[1]][1:200] # is the hardness of each validation condition
-#####
-ValidationSetHardness <- RandomHardnessCalculator(indices = IndexValidation,borders = bordersValidation,DistanceMatrix = disMatTrTesVal)
-ValidationSetHardnessMat <- matrix(t(ValidationSetHardness[[1]]),nrow = 72,ncol=1)
-######Hardness of the validation set is 0.4640503 given 864 conditions as the training set
-#####this value is close to some clusters in clustering based approach
-#calculate the varinace of TF expression accross conditions old vs prostate
-OldTFVariance2 <- matrix(nrow = 864,ncol=1)
-ProstTFVariance2 <- matrix(nrow = 200,ncol=1)
-for(i in 201:1064){
-  OldTFVariance2[i-200,1] <- var(TFmatValidationProstateFinal[,i])
-  #ProstTFVariance2[i,1] <- var(TFmatValidationProstateFinal[,i])
-}
-boxplot.matrix(cbind(OldTFVariance,ProstTFVariance))
-ProstTFVarianceB <- matrix(nrow = 477,ncol=1)
-for(i in 1:477){
-  ProstTFVarianceB[i,1]<- var(dataProstateNum477[i,SampledCondsProstate])
-}
-
 ##################################################################################################
 
 
